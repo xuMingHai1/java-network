@@ -39,6 +39,7 @@ public class Server {
                             outputStream.write(buffer, 0, bytesRead);
                         }
                         socket.close();
+                        LOGGER.info("客户端关闭连接！！！");
                     }
                     catch (IOException e) {
                         LOGGER.error("客户端错误", e);

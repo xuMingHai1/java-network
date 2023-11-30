@@ -20,45 +20,48 @@ public class Client {
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
 
     public static void main(String[] args) {
-        try (Socket socket = new Socket("::1", 8888);
+        try (Socket socket = new Socket("localhost", 8888);
              Scanner scanner = new Scanner(System.in)) {
+
             if (socket.isConnected()) {
                 LOGGER.info("连接服务器成功！！！");
             }
+
             InputStream inputStream = socket.getInputStream();
             OutputStream outputStream = socket.getOutputStream();
-            // 缓冲区
+            // 数据缓冲区
             byte[] buffer = new byte[1024];
-            StringBuilder sb;
-            // 读取位置
-            int bytesRead;
+
             for (; ; ) {
-                // 清空消息缓冲
-                sb = new StringBuilder();
                 LOGGER.info("请输入消息：");
-                // 控制台读取一行，发送到服务器
-                outputStream.write(scanner.nextLine().getBytes(StandardCharsets.UTF_8));
-                // 写入分隔符
-                outputStream.write("\n".getBytes(StandardCharsets.UTF_8));
+                // 控制台读取一行，写入分隔符，发送到服务器
+                outputStream.write(scanner.nextLine().concat("\n").getBytes(StandardCharsets.UTF_8));
+                // 读取并解析服务器消息
+                StringBuilder sb = new StringBuilder();
+                // 读取位置
+                int length;
                 // 接收服务器响应
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    String s;
-                    int lastIndex = bytesRead - 1;
-                    if (buffer[lastIndex] == '\n') {
-                        s = new String(buffer, 0, lastIndex, StandardCharsets.UTF_8);
-                        sb.append(s);
+                while ((length = inputStream.read(buffer)) != -1) {
+                    sb.append(new String(buffer, 0, length, StandardCharsets.UTF_8));
+                    // 解析消息
+                    if ('\n' == sb.charAt(sb.length() - 1)) {
                         break;
                     }
-                    s = new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
-                    sb.append(s);
                 }
-                LOGGER.info("服务器：{}", sb);
+                String message = sb.substring(0, sb.length() - 1);
+                LOGGER.info("服务器：{}", message);
+                // 关闭连接命令
+                if ("close".equals(message)) {
+                    LOGGER.info("关闭连接！！！");
+                    break;
+                }
             }
 
         }
         catch (IOException e) {
-            throw new RuntimeException(e);
+            LOGGER.info("服务器连接错误", e);
         }
+
     }
 
 }
