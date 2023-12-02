@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -36,19 +37,18 @@ public class Client {
                 LOGGER.info("请输入消息：");
                 // 控制台读取一行，写入分隔符，发送到服务器
                 outputStream.write(scanner.nextLine().concat("\n").getBytes(StandardCharsets.UTF_8));
-                // 读取并解析服务器消息
-                StringBuilder sb = new StringBuilder();
                 // 读取位置
                 int length;
-                // 接收服务器响应
-                while ((length = inputStream.read(buffer)) != -1) {
-                    sb.append(new String(buffer, 0, length, StandardCharsets.UTF_8));
-                    // 解析消息
-                    if ('\n' == sb.charAt(sb.length() - 1)) {
-                        break;
-                    }
-                }
-                String message = sb.substring(0, sb.length() - 1);
+                byte[] messageBuffer = new byte[0];
+                String message;
+                do {
+                    length = inputStream.read(buffer);
+                    int oldLength = messageBuffer.length;
+                    messageBuffer = Arrays.copyOf(messageBuffer, oldLength + length);
+                    System.arraycopy(buffer, 0, messageBuffer, oldLength, length);
+                    message = new String(messageBuffer, StandardCharsets.UTF_8);
+                } while (message.charAt(message.length() - 1) != '\n');
+                message = message.substring(0, message.length() - 1);
                 LOGGER.info("服务器：{}", message);
                 // 关闭连接命令
                 if ("close".equals(message)) {
