@@ -37,12 +37,10 @@ public class Client {
                 LOGGER.info("请输入消息：");
                 // 控制台读取一行，写入分隔符，发送到服务器
                 outputStream.write(scanner.nextLine().concat("\n").getBytes(StandardCharsets.UTF_8));
-                // 读取位置
-                int length;
                 byte[] messageBuffer = new byte[0];
                 String message;
                 do {
-                    length = inputStream.read(buffer);
+                    int length = inputStream.read(buffer);
                     int oldLength = messageBuffer.length;
                     messageBuffer = Arrays.copyOf(messageBuffer, oldLength + length);
                     System.arraycopy(buffer, 0, messageBuffer, oldLength, length);
