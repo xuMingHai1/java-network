@@ -64,6 +64,7 @@ public class ServerChannel {
                         ByteBuffer byteBuffer = (ByteBuffer) selectionKey.attachment();
                         try {
                             int read = socketChannel.read(byteBuffer);
+                            LOGGER.info("byteBuffer = {}", byteBuffer);
                             if (read == -1) {
                                 LOGGER.info("客户端关闭连接！！！");
                                 selectionKey.cancel();
@@ -75,7 +76,6 @@ public class ServerChannel {
                                 socketChannel.write(byteBuffer);
                             }
                             // 清空缓冲区
-                            LOGGER.info("byteBuffer = {}", byteBuffer);
                             byteBuffer.clear();
                         }
                         catch (IOException e) {

@@ -8,7 +8,6 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -26,22 +25,12 @@ public class ClientChannel {
             if (socketChannel.isConnected()) {
                 LOGGER.info("连接服务器成功！！！");
             }
-            ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+            MessageHandler messageHandler = new MessageHandler();
             for (; ; ) {
                 LOGGER.info("请输入消息：");
                 // 发送消息给服务器
                 socketChannel.write(ByteBuffer.wrap(scanner.nextLine().concat("\n").getBytes(StandardCharsets.UTF_8)));
-                byte[] messageBuffer = new byte[0];
-                String message;
-                do {
-                    int length = socketChannel.read(byteBuffer);
-                    int oldLength = messageBuffer.length;
-                    messageBuffer = Arrays.copyOf(messageBuffer, oldLength + length);
-                    System.arraycopy(byteBuffer.array(), 0, messageBuffer, oldLength, length);
-                    byteBuffer.clear();
-                    message = new String(messageBuffer, StandardCharsets.UTF_8);
-                } while (message.charAt(message.length() - 1) != '\n');
-                message = message.substring(0, message.length() - 1);
+                String message = messageHandler.handle(socketChannel);
                 LOGGER.info("服务器：{}", message);
                 // 关闭连接命令
                 if ("close".equals(message)) {
