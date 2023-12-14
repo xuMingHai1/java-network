@@ -3,6 +3,7 @@ package xyz.xuminghai.channel;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -29,6 +30,9 @@ public class MessageHandler {
         String message;
         do {
             int length = byteChannel.read(byteBuffer);
+            if (length == -1) {
+                throw new ClosedChannelException();
+            }
             int oldLength = messageBuffer.length;
             messageBuffer = Arrays.copyOf(messageBuffer, oldLength + length);
             System.arraycopy(byteBuffer.array(), 0, messageBuffer, oldLength, length);
